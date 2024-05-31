@@ -1,61 +1,73 @@
-<div class="active tab-pane" id="settings">
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
+@extends('layouts.app')
+
+@section('content')
+
+    <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Edit Patient</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Edit Patient</li>
+            </ol>
+          </div>
         </div>
-    @endif
-    <form action="{{ route('user.update') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <div class="form-group row">
-            <label for="inputName" class="col-sm-2 col-form-label">Name</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="inputName" name="name" value="{{ old('name', $authUser->name) }}" placeholder="Name">
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <form method="POST" action="{{ route('doctors.update', ['id' => $doctor->id, 'page' => request()->query('page')]) }}">
+                  @csrf
+                  <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" name="name" class="form-control" id="name" value="{{ $doctor->name }}" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" class="form-control" id="email" value="{{ $doctor->email }}" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="alamat" class="form-label">Address</label>
+                    <input type="text" name="alamat" class="form-control" id="alamat" value="{{ $doctor->alamat }}">
+                </div>
+                <div class="mb-3">
+                    <label for="nomor_hp" class="form-label">Phone Number</label>
+                    <input type="text" name="nomor_hp" class="form-control" id="nomor_hp" value="{{ $doctor->nomor_hp }}">
+                </div>
+                <div class="mb-3">
+                    <label for="foto" class="form-label">Photo</label>
+                    <input type="file" name="foto" class="form-control" id="foto">
+                    @if ($doctor->foto)
+                        <img src="{{ asset('images/' . $doctor->foto) }}" alt="Doctor Photo" class="img-thumbnail mt-2" width="150">
+                    @endif
+                </div>
+
+                  <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+              </div>
+              <!-- /.card-body -->
             </div>
+            <!-- /.card -->
+          </div>
         </div>
-        <div class="form-group row">
-            <label for="inputEmail" class="col-sm-2 col-form-label">Email</label>
-            <div class="col-sm-10">
-                <input type="email" class="form-control" id="inputEmail" name="email" value="{{ old('email', $authUser->email) }}" placeholder="Email">
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
-            <div class="col-sm-10">
-                <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password">
-                <small class="form-text text-muted">Leave blank if you don't want to change the password</small>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputPasswordConfirmation" class="col-sm-2 col-form-label">Confirm Password</label>
-            <div class="col-sm-10">
-                <input type="password" class="form-control" id="inputPasswordConfirmation" name="password_confirmation" placeholder="Confirm Password">
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputFoto" class="col-sm-2 col-form-label">Photo</label>
-            <div class="col-sm-10">
-                <input type="file" class="form-control" id="inputFoto" name="foto">
-                @if($authUser->foto)
-                    <img src="{{ asset('storage/fotos/' . $authUser->foto) }}" alt="User Photo" style="max-width: 150px; margin-top: 10px;">
-                @endif
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputAlamat" class="col-sm-2 col-form-label">Address</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="inputAlamat" name="alamat" value="{{ old('alamat', $authUser->alamat) }}" placeholder="Address">
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputNomorHp" class="col-sm-2 col-form-label">Phone Number</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="inputNomorHp" name="nomor_hp" value="{{ old('nomor_hp', $authUser->nomor_hp) }}" placeholder="Phone Number">
-            </div>
-        </div>
-        <div class="form-group row">
-            <div class="offset-sm-2 col-sm-10">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-            </div>
-        </div>
-    </form>
-</div>
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+@endsection

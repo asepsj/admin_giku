@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\View;
+namespace App\Http\Controllers\Page;
 
 use App\Models\Pasien;
 use Illuminate\Http\Request;
@@ -8,13 +8,35 @@ use App\Http\Controllers\Controller;
 
 class PasiensController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    public function index(Request $request)
+    {
+        $search = $request->input('table_search');
+
+        $query = Pasien::query();
+
+        if (!empty($search)) {
+            $query->where('name_pasien', 'LIKE', "%{$search}%")
+                ->orWhere('email_pasien', 'LIKE', "%{$search}%");
+        }
+
+        $pasiens = $query->paginate(5);
+
+        return view('dashboard.pasien.pasiens', ['pasiens' => $pasiens]);
+    }
+
     public function edit($id)
     {
         // Ambil data pasien berdasarkan ID
         $pasiens = Pasien::findOrFail($id);
         
         // Kirim data pasien ke tampilan edit
-        return view('dashboard.pasien.edit_pasien', ['pasiens' => $pasiens]);
+        return view('dashboard.pasien.edit', ['pasiens' => $pasiens]);
     }
 
     public function update(Request $request, $id)
@@ -34,5 +56,14 @@ class PasiensController extends Controller
 
         // Redirect ke halaman yang diinginkan setelah update
         return redirect()->route('pasiens')->with('success', 'Patient updated successfully');
+    }
+
+    public function destroy($id)
+    {
+        $pasien = Pasien::findOrFail($id);
+
+        $pasien->delete();
+
+        return redirect()->route('pasiens')->with('success', 'Doctor deleted successfully.');
     }
 }

@@ -28,16 +28,17 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Pasien</h3>
                             <div class="card-tools">
-                                <div class="input-group input-group-sm" style="width: 150px;">
-                                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
-                                    <div class="input-group-append">
-                                        <button type="submit" class="btn btn-default">
-                                            <i class="fas fa-search"></i>
-                                        </button>
+                                <form action="{{ route('pasiens') }}" method="GET">
+                                    <div class="input-group input-group-sm" style="width: 150px;">
+                                        <input type="text" name="table_search" class="form-control float-right" placeholder="Search" value="{{ request('table_search') }}">
+                                        <div class="input-group-append">
+                                            <button type="submit" class="btn btn-default">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                </form>
                             </div>
                         </div>
                         <!-- /.card-header -->
@@ -65,9 +66,26 @@
                                         <td>{{ $pasien->nomor_hp }}</td>
                                         <td>{{ $pasien->alamat }}</td>
                                         <td>{{ $pasien->created_at }}</td>
-                                        <td>
+                                        {{-- <td>
                                             <a href="{{ route('pasiens.edit', $pasien->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                        </td>
+                                            <form action="{{ route('pasiens.destroy', $pasien->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this pasien?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </td> --}}
+                                        <td>
+                                            <a href="{{ route('pasiens.edit', $pasien->id) }}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('pasiens.destroy', $pasien->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this pasien?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </td>                                        
                                     </tr>
                                     @endforeach
                                 </tbody>

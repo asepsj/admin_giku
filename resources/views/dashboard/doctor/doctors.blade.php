@@ -9,12 +9,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Simple Tables</h1>
+            <h1>Dokter</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Simple Tables</li>
+              <li class="breadcrumb-item active">Dokter</li>
             </ol>
           </div>
         </div>
@@ -27,24 +27,23 @@
         <div class="row">
           <div class="col-12">
             <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Responsive Hover Table</h3>
-
+              <div class="card-header">                
+                <a href="{{ route('doctors.add') }}" class="btn btn-primary">Add Doctor</a>
                 <div class="card-tools">
-                  <div class="input-group input-group-sm" style="width: 150px;">
-                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
-
-                    <div class="input-group-append">
-                      <button type="submit" class="btn btn-default">
-                        <i class="fas fa-search"></i>
-                      </button>
-                    </div>
-                  </div>
+                  <form action="{{ route('doctors') }}" method="GET">
+                      <div class="input-group input-group-sm" style="width: 150px;">
+                          <input type="text" name="table_search" class="form-control float-right" placeholder="Search" value="{{ request('table_search') }}">
+                          <div class="input-group-append">
+                              <button type="submit" class="btn btn-default">
+                                  <i class="fas fa-search"></i>
+                              </button>
+                          </div>
+                      </div>
+                  </form>
                 </div>
               </div>
               <!-- /.card-header -->
               <div class="card-body table-responsive p-0">
-                <a href="{{ route('doctors.add') }}" class="btn btn-primary">Add Doctor</a>
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
@@ -68,11 +67,18 @@
                       <td>{{ $doctor->alamat }}</td>
                       <td>{{ $doctor->created_at }}</td>
                       <td>
-                        <form action="{{ route('doctors.destroy', $doctor->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this doctor?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
+                        <td>
+                          <a href="{{ route('doctors.edit', $doctor->id) }}" class="btn btn-sm btn-warning">
+                              <i class="fas fa-edit"></i>
+                          </a>
+                          <form action="{{ route('doctors.destroy', $doctor->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this pasien?');">
+                              @csrf
+                              @method('DELETE')
+                              <button type="submit" class="btn btn-sm btn-danger">
+                                  <i class="fas fa-trash-alt"></i>
+                              </button>
+                          </form>
+                      </td>
                     </td>
                     </tr>
                     @endforeach

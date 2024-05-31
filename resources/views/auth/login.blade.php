@@ -78,7 +78,7 @@
     
 <main class="form-signin w-100 m-auto">
 
-        <img src="{{ asset ('storage/logo/logo1.png')}}" class="pb-2" height="100" alt="Logo">
+        <img src="{{ asset ('storage/logo/logo.png')}}" class="pb-2" height="100" alt="Logo">
 <form method="POST" action="{{ route('login') }}">
     @csrf
     

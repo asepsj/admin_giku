@@ -322,7 +322,7 @@
                   </div>
                   <!-- /.tab-pane -->
 
-                  @include('dashboard.doctor.edit')
+                  @include('dashboard.profile.editprofile')
                   <!-- /.tab-pane -->
                 </div>
                 <!-- /.tab-content -->
