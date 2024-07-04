@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use App\Models\Pasien;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -22,18 +23,11 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@gmail.com',
         // ]);
 
-        DB::table('users')->insert([
+        User::create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('12121212'),
             'role' => 'admin',
-        ]);
-
-        DB::table('users')->insert([
-            'name' => 'Doctor',
-            'email' => 'doctor@gmail.com',
-            'password' => Hash::make('12121212'),
-            'role' => 'doctor',
         ]);
 
         Pasien::create([

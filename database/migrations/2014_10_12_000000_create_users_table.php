@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('foto')->nullable();
+            $table->string('deskripsi')->nullable();
             $table->string('alamat')->nullable();
             $table->string('nomor_hp')->nullable();
             $table->enum('role', ['admin', 'doctor'])->default('doctor');

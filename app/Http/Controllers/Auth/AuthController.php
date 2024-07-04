@@ -14,14 +14,15 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect('/dashboard');
         }
-        return view('auth.login');
+        return view('auth.index');
     }
 
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
+        $remember = $request->has('remember');
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $remember)) {
             // Jika autentikasi berhasil
             $request->session()->regenerate();
 
@@ -29,13 +30,13 @@ class AuthController extends Controller
             $request->user()->createToken('API Token')->plainTextToken;
 
             // Arahkan ke dashboard
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/dashboard')->with('success', 'Selamat datang! Anda berhasil masuk.');
         }
 
         // Jika autentikasi gagal
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ]);
+            'email' => 'email atau password yang anda masukkan salah',
+        ])->withInput();
     }
 
     public function logout(Request $request)

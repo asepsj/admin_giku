@@ -53,7 +53,7 @@ class AntrianController extends Controller
                 'name_doctor' => $doctor->name,
                 'tanggal_antrian' => $tanggal_antrian,
                 'nombor_antrian' => $nomor_antrian,
-                'status' => 'berlangsung',
+                'status' => 'dibuat',
             ]);
 
             return response()->json([
@@ -95,4 +95,20 @@ class AntrianController extends Controller
 
         return response()->json($antrian, 200);
     }
+
+    public function getAntrianByPasien(Request $request)
+    {
+        // Mendapatkan pasien yang sedang login
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Mendapatkan antrian berdasarkan pasien_id
+        $antrians = Antrian::where('pasien_id', $user->id)->get();
+
+        return response()->json(['antrians' => $antrians], 200);
+    }
+
 }

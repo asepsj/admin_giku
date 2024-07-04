@@ -20,12 +20,14 @@ class AuthController extends Controller
         $req->validate([
             'name_pasien' => 'required',
             'email_pasien' => 'required',
+            'nomor_hp' => 'required',
             'password' => 'required'
         ]);
 
         $data = Pasien::create([
             'name_pasien' => $req->name_pasien,
             'email_pasien' => $req->email_pasien,
+            'nomor_hp' => $req->nomor_hp,
             'password' => Hash::make($req->password),
         ]);
 
@@ -43,13 +45,21 @@ class AuthController extends Controller
 
         $user = Pasien::where('email_pasien', $req->email_pasien)->first();
 
-        if (!$user || ! Hash::check($req->password, $user->password)) {
+        if (!$user) {
             return response()->json([
-                'message' => "failed"
-            ]);
+                'message' => "failed",
+                'error' => "Email yang anda masukkan tidak terdaftar."
+            ], 401);
         }
 
-        $token =  $user->createToken('API_token')->plainTextToken;
+        if (!Hash::check($req->password, $user->password)) {
+            return response()->json([
+                'message' => "failed",
+                'error' => "Kata sandi yang anda masukkan salah."
+            ], 401);
+        }
+
+        $token = $user->createToken('API_token')->plainTextToken;
         $this->response['message'] = 'success';
         $this->response['data'] = [
             'token' => $token
@@ -57,6 +67,7 @@ class AuthController extends Controller
 
         return response()->json($this->response, 200);
     }
+
 
     public function me()
     {

@@ -15,7 +15,6 @@ class ViewComposerServiceProvider extends ServiceProvider
     {
         //
     }
-
     /**
      * Bootstrap services.
      */

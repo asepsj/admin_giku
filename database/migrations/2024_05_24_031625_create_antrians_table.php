@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name_pasien')->nullable();
             $table->string('name_doctor')->nullable();
             $table->unsignedInteger('nombor_antrian');
-            $table->enum('status', ['berlangsung', 'selesai', 'batal'])->default('berlangsung');
+            $table->enum('status', ['dibuat', 'berlangsung', 'selesai', 'batal'])->default('dibuat');
             $table->date('tanggal_antrian')->nullable();
             $table->timestamps();
 
