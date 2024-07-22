@@ -3,33 +3,33 @@
 namespace App\Http\Controllers\Page\Antrian;
 
 use App\Models\Antrian;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Events\NotificationCreated;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class JadwalController extends Controller
 {
+    public function __construct()
+    {
+        $this->database = Firebase::database();
+        $this->tablename = 'antrians';
+    }
     public function index(Request $request)
     {
-        $tanggal_antrian = $request->input('tanggal_antrian', Carbon::now()->toDateString());
-        $user = Auth::user();
-        $role = $user->role;
-        
-        if ($role === 'doctor') {
-            $doctor_id = $user->id;
-        } else {
-            $doctor_id = $request->input('doctor_id');
-        }
-        
-        $antrians = Antrian::where('tanggal_antrian', $tanggal_antrian)
-                            ->where('doctor_id', $doctor_id)
-                            ->whereNotIn('status', ['selesai', 'batal'])
-                            ->whereIn('nombor_antrian', [1, 2, 3, 4, 5])
-                            ->orderBy('nombor_antrian', 'asc')
-                            ->get();
+        $id = $request->session()->get('uid');
+        $date = $request->input('date', Carbon::now()->toDateString());
 
-        return view('pages.antrian.jadwal.index', compact('antrians'));
+        $antrians = $this->database->getReference($this->tablename)->orderByChild('doctor_key')->equalTo($id)->getValue();
+
+        $filteredAntrians = array_filter($antrians, function ($antrian) use ($date) {
+            return $antrian['date'] === $date && $antrian['status'] !== 'batal';
+        });
+
+        return view('pages.antrian.jadwal.index', ['antrians' => $filteredAntrians]);
     }
 
     public function update(Request $request, $id)
@@ -38,6 +38,16 @@ class JadwalController extends Controller
         $antrian->status = $request->input('status', 'berlangsung');
         $antrian->save();
 
+        // Create and send notification
+        $notification = Notification::create([
+            // 'antrian_id' => $antrian->id,
+            // 'user_id' =>  Auth::id(),
+            'pasien_id' => $antrian->pasien_id,
+            'title' => 'Status Antrian Diperbarui',
+            'message' => 'Status antrian Anda telah diperbarui menjadi ' . $antrian->status,
+            'is_read' => false,
+        ]);
+        event(new NotificationCreated($notification));
         return redirect()->back()->with('success', 'Status antrian telah diperbarui menjadi berlangsung.');
     }
 }

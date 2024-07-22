@@ -10,12 +10,12 @@
                 href="{{ route('profile.setting') }}"><i class="bx bx-cog me-1"></i>
                 Settings</a>
         </li>
-        @if ($authUser->role === 'doctor')
+        {{-- @if ($authUser->role === 'doctor')
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('klinik') ? 'active' : '' }}"
                     href="{{ route('klinik', $authUser->id) }}"><i class="bx bx-clinic me-1"></i>
                     Klinik</a>
             </li>
-        @endif
+        @endif --}}
     </ul>
 </ul>

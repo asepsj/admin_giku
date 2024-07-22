@@ -2,27 +2,47 @@
 
 namespace App\Http\Controllers\Page\Profile;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class PasswordController extends Controller
 {
-    public function index()
+    private $firebaseAuth;
+
+    public function __construct()
     {
-        return view('pages.profile.setting.index');
+        $this->firebaseAuth = Firebase::auth();
+        $this->database = Firebase::database();
+        $this->tablename = 'users';
+    }
+    public function index(Request $request)
+    {
+            return view('pages.profile.setting.index');
     }
 
     public function changePassword(Request $request)
     {
-        $user = Auth::user();
+        $uid = $request->session()->get('uid');
 
         $request->validate([
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user->password = bcrypt($request->password);
-        $user->save();
+        $properties = [
+            'password' => $request->password,
+        ];
+        $updateData = [
+            'password'=> Hash::make($request->password),
+        ];
 
-        return redirect()->route('profile.setting')->with('success', 'Password changed successfully');
+        try {
+            $this->firebaseAuth->updateUser($uid, $properties);
+            $this->database->getReference($this->tablename . '/' . $uid)->update($updateData);
+            return redirect()->back()->with('success', 'Berhasil mengupdate data');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to update user in Firebase Database: ' . $e->getMessage()]);
+        }
     }
 }

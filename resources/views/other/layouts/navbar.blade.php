@@ -6,19 +6,80 @@
         </a>
     </div>
     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-        <!-- Search -->
+        <!-- Dynamic Title -->
         <div class="navbar-nav align-items-center">
             <div class="nav-item d-flex align-items-center">
-                {{-- <i class="bx bx-search fs-4 lh-0"></i>
-                <input type="text" class="form-control border-0 shadow-none" placeholder="Search..."
-                    aria-label="Search..." /> --}}<!-- Dynamic Title -->
-                <div class="nav-item">
-                    <h5 class="mb-0">
-                        @yield('navbar-title')
-                    </h5>
-                </div>
-                <!-- /Dynamic Title -->
+                <h5 class="mt-0 mb-0">
+                    @yield('navbar-title')
+                </h5>
             </div>
         </div>
+        <!-- User -->
+        <ul class="navbar-nav flex-row align-items-center ms-auto">
+            <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                    @if (!empty($authUser['foto']))
+                        <div class="avatar avatar-online">
+                            <img src="{{ $authUser['foto'] }}" alt class="w-px-40 h-auto rounded-circle" />
+                        </div>
+                    @else
+                        <img src="{{ asset('storage/logo/user.png') }}" alt="user-avatar" class="d-block rounded"
+                            height="40" width="40" id="uploadedAvatar">
+                    @endif
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="avatar avatar-online">
+                                        @if (!empty($authUser['foto']))
+                                            <img src="{{ $authUser['foto'] }}" alt
+                                                class="w-px-40 h-auto rounded-circle" />
+                                        @else
+                                            <img src="{{ asset('storage/logo/user.png') }}" alt
+                                                class="w-px-40 h-auto rounded-circle">
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span
+                                        class="fw-semibold d-block">{{ substr($authUser['displayName'], 0, 8) }}</span>
+                                    <small class="text-muted">{{ $authUser['role'] }}</small>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('profile') }}">
+                            <i class="bx bx-user me-2"></i>
+                            <span class="align-middle">My Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('profile.setting') }}">
+                            <i class="bx bx-cog me-2"></i>
+                            <span class="align-middle">Settings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="javascript:void(0);"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="bx bx-power-off me-2"></i>
+                            <span class="align-middle">Log Out</span>
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     </div>
 </nav>

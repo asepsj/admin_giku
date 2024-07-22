@@ -10,9 +10,9 @@
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name"
-                            placeholder="Enter name" required>
+                        <label for="displayName" class="form-label">Nama Lengkap</label>
+                        <input type="text" class="form-control" id="displayName" name="displayName"
+                            placeholder="Enter Nama Lengkap" required>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email address</label>
@@ -20,14 +20,14 @@
                             placeholder="Enter email" required>
                     </div>
                     <div class="mb-3">
-                        <label for="alamat" class="form-label">Address</label>
-                        <input type="text" class="form-control" id="alamat" name="alamat"
-                            placeholder="Enter address" required>
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="phoneNumber" name="phoneNumber"
+                            placeholder="Enter phone number" required>
                     </div>
                     <div class="mb-3">
-                        <label for="nomor_hp" class="form-label">Phone Number</label>
-                        <input type="text" class="form-control" id="nomor_hp" name="nomor_hp"
-                            placeholder="Enter phone number" required>
+                        <label for="alamat" class="form-label">Alamat</label>
+                        <input type="text" class="form-control" id="alamat" name="alamat"
+                            placeholder="Enter address" required>
                     </div>
                 </div>
                 <!-- /.card-body -->

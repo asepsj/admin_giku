@@ -13,9 +13,9 @@ class AntrianController extends Controller
 {
     public function tambahAntrian(Request $request)
     {
-        $user = Auth::user(); // Mengambil data pasien dari token
-        $doctor_id = $request->input('doctor_id'); // ID dokter yang dipilih
-        $tanggal_antrian = $request->input('tanggal_antrian'); // Tanggal antrian yang dipilih
+        $user = Auth::user();
+        $doctor_id = $request->input('doctor_id'); 
+        $tanggal_antrian = $request->input('tanggal_antrian'); 
         $nomor_antrian = $request->input('nomor_antrian');
 
         if (!$doctor_id || !$tanggal_antrian || !$nomor_antrian) {
@@ -109,6 +109,25 @@ class AntrianController extends Controller
         $antrians = Antrian::where('pasien_id', $user->id)->get();
 
         return response()->json(['antrians' => $antrians], 200);
+    }
+
+    public function updateStatusBatal($id)
+    {
+        $antrian = Antrian::find($id);
+
+        if (!$antrian) {
+            return response()->json([
+                'message' => 'Antrian tidak ditemukan'
+            ], 404);
+        }
+
+        $antrian->status = 'batal';
+        $antrian->save();
+
+        return response()->json([
+            'message' => 'Status antrian berhasil diperbarui menjadi batal',
+            'antrian' => $antrian
+        ], 200);
     }
 
 }

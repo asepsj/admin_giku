@@ -3,47 +3,57 @@
 namespace App\Http\Controllers\Page\Profile;
 
 use App\Models\Klinik;
+use Kreait\Firebase\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class MyprofileController extends Controller
 {
-    public function index()
+    private $firebaseAuth;
+
+    public function __construct()
     {
-        $klinik = Klinik::where('user_id', Auth::user()->id)->first();
-        return view('pages.profile.myprofile.index', compact('klinik'));
+        $this->firebaseAuth = Firebase::auth();
+        $this->database = Firebase::database();
+        $this->tablename = 'users';
+    }
+
+    public function index(Request $request)
+    {
+            return view('pages.profile.myprofile.index');
     }
 
     public function update(Request $request)
     {
-        $user = Auth::user();
+        $uid = $request->session()->get('uid');
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'foto' => 'nullable|image|max:2048',
+            'displayName' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            // 'foto' => 'nullable|image|max:2048',
             'alamat' => 'nullable|string|max:255',
-            'nomor_hp' => 'nullable|string|max:20',
+            'phoneNumber' => 'nullable|string|max:20',
         ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
-            if ($user->foto) {
-                Storage::delete('public/fotos/' . $user->foto);
-            }
-            // Simpan foto baru
-            $imageName = time().'.'.$request->foto->extension();
-            $request->foto->storeAs('public/fotos', $imageName);
-            $user->foto = $imageName;
-        }
-        $user->alamat = $request->alamat;
-        $user->nomor_hp = $request->nomor_hp;
-        $user->save();
+        $properties = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+        ];
 
-        return redirect()->route('profile')->with('success', 'Profile updated successfully');
+        $updateData = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+            'alamat' => $request->alamat,
+            'phoneNumber' => $request->phoneNumber,
+        ];
+        try {
+            $this->firebaseAuth->updateUser($uid, $properties);
+            $this->database->getReference($this->tablename . '/' . $uid)->update($updateData);
+            return redirect()->back()->with('success', 'Berhasil mengupdate data');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 }

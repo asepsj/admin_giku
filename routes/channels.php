@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+Broadcast::channel('private-pasien.{pasienId}', function ($user, $pasienId) {
+    // Authorization logic here, e.g., check if the user is allowed to access this channel
+    return $user->id === $pasienId;
+});

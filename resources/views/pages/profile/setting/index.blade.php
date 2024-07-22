@@ -6,17 +6,24 @@
             <div class="row">
                 <div class="col-md-12">
                     <!-- Button -->
-                    @include('pages.profile.button.index')
+                    {{-- @include('pages.profile.button.index') --}}
                     <!-- /Button -->
                     <div class="card mb-4">
                         <hr class="my-0" />
                         <div class="card-body">
                             <!-- Account -->
-                            @if (session('success_password'))
+                            {{-- @if (session('success_password'))
                                 <div class="alert alert-success">
                                     {{ session('success_password') }}
                                 </div>
                             @endif
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    @foreach ($errors->all() as $error)
+                                        <p>{{ $error }}</p>
+                                    @endforeach
+                                </div>
+                            @endif --}}
                             <form action="{{ route('profile.changePassword') }}" method="POST">
                                 @csrf
                                 <div class="mb-3 col-md-12">
@@ -41,4 +48,6 @@
             </div>
         </div>
     </div>
+    @include('other.alert.success')
+    @include('other.alert.error')
 @endsection

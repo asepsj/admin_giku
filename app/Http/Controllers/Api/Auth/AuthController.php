@@ -59,14 +59,18 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Generate API token
         $token = $user->createToken('API_token')->plainTextToken;
+
         $this->response['message'] = 'success';
         $this->response['data'] = [
-            'token' => $token
+            'token' => $token,
+            'pasien_id' => $user->id // Assuming pasien_id is 'id' field of Pasien model
         ];
 
         return response()->json($this->response, 200);
     }
+
 
 
     public function me()
@@ -86,27 +90,5 @@ class AuthController extends Controller
         $this->response['message'] = 'success';
 
         return response()->json($this->response, 200);
-    }
-
-    public function updateProfile(Request $request)
-    {
-        $user = Auth::user();
-
-        // Validasi input
-        $this->validate($request, [
-            'name_pasien' => 'required',
-            'email_pasien' => 'required|email|unique:doctors,email,'.$user->id,
-            'password' => 'nullable|min:6',
-        ]);
-
-        // Update profil dokter
-        $user->name_pasien = $request->input('name_pasien');
-        $user->email_pasien = $request->input('email_pasien');
-        if ($request->has('password')) {
-            $user->password = bcrypt($request->input('password'));
-        }
-        $user->save();
-
-        return response()->json(['message' => 'Profile updated successfully'], 200);
     }
 }

@@ -25,93 +25,95 @@
                 @include('pages.users.dokter.add')
             </div>
             <div class="card">
-                <div class="table-responsive text-nowrap">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Foto</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Nomor Handphone</th>
-                                <th>Alamat</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0">
-                            @foreach ($doctors as $doctor)
+                @if ($users == null)
+                    <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
+                        Tidak ada dokter yang terdaftar silahkan tambahkan dokter
+                    </div>
+                @else
+                    <div class="table-responsive text-nowrap">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>
-                                        <div class="user-panel">
-                                            <div class="image" style="width: 50px; height: 50px; overflow: hidden;">
-                                                @if ($doctor->foto)
-                                                    <img src="{{ asset('storage/fotos/' . $doctor->foto) }}"
-                                                        alt="{{ $doctor->name }}" style="width: 100%;">
-                                                @else
-                                                    <img src="{{ asset('storage/logo/user.png') }}" class="img-circle"
-                                                        alt="Default Foto" style="width: 100%;">
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ $doctor->name }}</td>
-                                    <td>{{ $doctor->email }}</td>
-                                    <td>{{ $doctor->nomor_hp }}</td>
-                                    <td>
-                                        <div style="width: 100px; overflow: hidden; text-overflow: ellipsis;">
-                                            {{ $doctor->alamat }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="col-md-6">
-                                            <div class="demo-inline-spacing d-flex align-items-center">
-                                                <a href="{{ route('doctors.edit', $doctor->id) }}"
-                                                    class="btn rounded-pill btn-icon btn-primary">
-                                                    <i class="tf-icons bx bx-edit-alt"></i>
-                                                </a>
-                                                <a href="{{ route('klinik', $doctor->id) }}"
-                                                    class="btn rounded-pill btn-icon btn-info">
-                                                    <i class="bx bx-clinic"></i>
-                                                </a>
-                                                <div class="dropdown">
-                                                    <button type="button"
-                                                        class="btn p-0 rounded-pill btn-icon btn-secondary dropdown-toggle hide-arrow"
-                                                        data-bs-toggle="dropdown">
-                                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    <th>No</th>
+                                    {{-- <th>Foto</th> --}}
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Nomor Handphone</th>
+                                    <th>Alamat</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="table-border-bottom-0">
+                                @foreach ($users as $key => $item)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $item['displayName'] ?? '' }}</td>
+                                        <td>{{ $item['email'] ?? '' }}</td>
+                                        <td>{{ $item['phoneNumber'] ?? '' }}</td>
+                                        <td>{{ $item['alamat'] ?? '' }}</td>
+                                        <td>
+                                            <div class="col-md-6">
+                                                <div class="align-items-center">
+                                                    <!-- Edit Button -->
+                                                    <a href="{{ route('doctors.edit', $key) }}"
+                                                        class="btn rounded-pill btn-icon btn-primary">
+                                                        <i class="tf-icons bx bx-edit-alt"></i>
+                                                    </a>
+
+                                                    <!-- Delete Button -->
+                                                    <button type="button" class="btn rounded-pill btn-icon btn-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#confirmDeleteModal{{ $key }}">
+                                                        <i class="tf-icons bx bx-trash"></i>
                                                     </button>
-                                                    <div class="dropdown-menu">
-                                                        <a class="dropdown-item"
-                                                            href="{{ route('jadwal', ['doctor_id' => $doctor->id]) }}"><i
-                                                                class="bx bx-receipt me-1"></i> Antrian</a>
-                                                        <form action="{{ route('doctors.destroy', $doctor->id) }}"
-                                                            method="POST" style="display:inline;"
-                                                            onsubmit="return confirm('Are you sure you want to delete this pasien?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button class="dropdown-item" type="submit"><i
-                                                                    class="bx bx-trash me-1"></i> Delete</button>
-                                                        </form>
+
+                                                    <!-- Modal for Confirmation -->
+                                                    <div class="modal fade" id="confirmDeleteModal{{ $key }}"
+                                                        tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                                                                    <button type="button" class="btn-close"
+                                                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <form id="deleteForm{{ $key }}" method="POST"
+                                                                    action="{{ route('doctors.destroy', $key) }}">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <div class="modal-body">
+                                                                        Apakah Anda yakin ingin menghapus dokter ini?
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            data-bs-dismiss="modal">Tidak</button>
+                                                                        <button type="submit"
+                                                                            class="btn btn-danger">Iya</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
-            <div class="card mt-3">
+            {{-- <div class="card mt-3">
                 <div class="card-footer clearfix">
                     <div class="d-flex justify-content-end">
                         <ul class="pagination m-0">
-                            {!! $doctors->links('pagination::bootstrap-4') !!}
+                            {!! $users->links('pagination::bootstrap-4') !!}
                         </ul>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
     @include('other.alert.success')

@@ -5,7 +5,7 @@
                 <img src="{{ asset('assets/img/logo/logo.png') }}" alt="Brand Logo" width="25">
             </span>
             <span class="menu-text fw-bolder ms-1">Giku</span>
-            <p class="h6 pt-4 ms-1"> ({{ $authUser->role }})</p>
+            {{-- <p class="h6 pt-4 ms-1"> ({{ $authUser->role }})</p> --}}
         </a>
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
             <i class="bx bx-chevron-left bx-sm align-middle"></i>
@@ -38,16 +38,9 @@
                         <div data-i18n="Text Divider">Setting</div>
                     </a>
                 </li>
-                @if ($authUser->role === 'doctor')
-                    <li class="menu-item {{ request()->routeIs('klinik') ? 'active' : '' }}">
-                        <a href="{{ route('klinik', $authUser->id) }}" class="menu-link">
-                            <div data-i18n="Text Divider">Klinik</div>
-                        </a>
-                    </li>
-                @endif
             </ul>
         </li>
-        @if ($authUser->role === 'admin')
+        @if ($authUser['role'] === 'admin')
             <li
                 class="menu-item {{ request()->routeIs('admins') || request()->routeIs('doctors') || request()->routeIs('pasiens') ? 'active open' : '' }}">
                 <a href="#" class="menu-link menu-toggle">
@@ -73,7 +66,7 @@
                 </ul>
             </li>
         @endif
-        @if ($authUser->role === 'doctor')
+        {{-- @if ($authUser->role === 'doctor') --}}
             <li
                 class="menu-item menu-item {{ request()->routeIs('jadwal') || request()->routeIs('antrian.riwayat') ? 'active open' : '' }}">
                 <a href="#" class="menu-link menu-toggle">
@@ -93,7 +86,7 @@
                     </li>
                 </ul>
             </li>
-        @endif
+        {{-- @endif --}}
         <li class="menu-item">
             <a href="#" class="menu-link"
                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

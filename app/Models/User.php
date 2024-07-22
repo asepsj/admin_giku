@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Klinik;
+use App\Models\Notification;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -51,5 +52,10 @@ class User extends Authenticatable
     public function klinik()
     {
         return $this->hasOne(Klinik::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'pasien_id');
     }
 }

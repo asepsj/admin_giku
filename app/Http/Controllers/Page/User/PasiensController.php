@@ -5,89 +5,81 @@ namespace App\Http\Controllers\Page\User;
 use App\Models\Pasien;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Kreait\Firebase\Contract\Database;
 use Illuminate\Support\Facades\Storage;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class PasiensController extends Controller
 {
-    public function index(Request $request)
+    private $firebaseAuth;
+    public function __construct(Database $database, Messaging $messaging)
     {
-        $search = $request->input('table_search');
+        $this->database = $database;
+        $this->tablename = 'pasiens';
+        $this->messaging = $messaging;
+        $this->firebaseAuth = Firebase::auth();
+    }
 
-        $query = Pasien::query();
-
-        if (!empty($search)) {
-            $query->where('name_pasien', 'LIKE', "%{$search}%")
-                ->orWhere('email_pasien', 'LIKE', "%{$search}%");
-        }
-
-        $pasiens = $query->paginate(5);
-
-        return view('pages.users.pasien.index', ['pasiens' => $pasiens]);
+    public function index()
+    {
+        $users = $this->database->getReference($this->tablename)->getValue();
+        return view('pages.users.pasien.index', compact('users'));
     }
 
     public function edit($id)
     {
-        // Ambil data pasien berdasarkan ID
-        $pasien = Pasien::findOrFail($id);
-        
-        // Kirim data pasien ke tampilan edit
-        return view('pages.users.pasien.edit', ['pasien' => $pasien]);
+        $key = $id;
+        $users = $this->database->getReference($this->tablename)->getChild($key)->getValue();
+        return view('pages.users.pasien.edit', compact('users', 'key'));
     }
 
     public function update(Request $request, $id)
-{
-    // Validasi data input
-    $request->validate([
-        'name_pasien' => 'required|string|max:255',
-        'email_pasien' => 'required|string|email|max:255',
-        'alamat' => 'nullable|string|max:255', // Tambahkan validasi untuk alamat
-        'nomor_hp' => 'nullable|string|max:15', // Tambahkan validasi untuk nomor HP
-        'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Tambahkan validasi untuk foto (opsional)
-    ]);
-
-    // Cari pasien berdasarkan ID
-    $pasien = Pasien::findOrFail($id);
-
-    // Update data pasien
-    $pasien->name_pasien = $request->input('name_pasien');
-    $pasien->email_pasien = $request->input('email_pasien');
-    $pasien->alamat = $request->input('alamat');
-    $pasien->nomor_hp = $request->input('nomor_hp');
-
-     // Mengelola unggahan foto jika ada
-    if ($request->hasFile('foto')) {
-        // Hapus foto lama jika ada
-        if ($pasien->foto) {
-            Storage::delete('public/fotos/' . $pasien->foto);
-        }
-        $foto = $request->file('foto');
-        $namaFoto = time() . '.' . $foto->getClientOriginalExtension();
-        $foto->storeAs('public/fotos', $namaFoto);
-
-        $pasien->foto = $namaFoto;
-    }
-
-    $pasien->save();
-
-    // Redirect ke halaman yang diinginkan setelah update
-    return redirect()->route('pasiens')->with('success', 'Patient updated successfully');
-}
-
-    public function show($id)
     {
-        // Temukan pasien berdasarkan ID
-        $pasien = Pasien::findOrFail($id);
-        
-        // Kirim data pasien ke tampilan blade
-        return view('pages.users.pasien.show', compact('pasien'));
+        $request->validate([
+            'displayName' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'alamat' => 'nullable|string|max:255',
+            'phoneNumber' => 'nullable|string|max:15',
+        ]);
+
+        $properties = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+        ];
+
+        $updateData = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+            'alamat' => $request->alamat,
+            'phoneNumber' => $request->phoneNumber,
+        ];
+
+        try {
+            $this->firebaseAuth->updateUser($id, $properties);
+            $this->database->getReference($this->tablename . '/' . $id)->update($updateData);
+            return redirect()->route('pasiens')->with('success', 'Berhasil mengupdate data');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to update user in Firebase Database: ' . $e->getMessage()]);
+        }
     }
 
     public function destroy($id)
     {
+        try {
+            $this->firebaseAuth->deleteUser($id);
+            $this->database->getReference($this->tablename . '/' . $id)->remove();
+            return redirect()->back()->with('success', 'User berhasil di hapus');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+    public function show($id)
+    {
+        // Temukan pasien berdasarkan ID
         $pasien = Pasien::findOrFail($id);
 
-        $pasien->delete();
-
-        return redirect()->route('pasiens')->with('success', 'Doctor deleted successfully.');
+        // Kirim data pasien ke tampilan blade
+        return view('pages.users.pasien.show', compact('pasien'));
     }
 }

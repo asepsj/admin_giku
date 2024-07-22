@@ -7,120 +7,123 @@ use App\Models\Klinik;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Kreait\Firebase\Contract\Database;
 use Illuminate\Support\Facades\Storage;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class DoctorsController extends Controller
 {
+    private $firebaseAuth;
+    public function __construct(Database $database, Messaging $messaging)
+    {
+        $this->database = $database;
+        $this->tablename = 'users';
+        $this->messaging = $messaging;
+        $this->firebaseAuth = Firebase::auth();
+    }
+
     public function index(Request $request)
     {
-        // Ambil nilai pencarian dari request
-        $search = $request->input('table_search');
-
-        // Jika ada nilai pencarian, filter data dokter
-        if ($search) {
-            $doctors = User::where('role', 'doctor')
-                ->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                })
-                ->paginate(5)
-                ->appends(['table_search' => $search]); // Menambahkan parameter pencarian ke pagination
-        } else {
-            // Jika tidak ada nilai pencarian, ambil semua data dokter
-            $doctors = User::where('role', 'doctor')->paginate(5);
-        }
-
-        // Kirim data dokter ke tampilan blade
-        return view('pages.users.dokter.index', ['doctors' => $doctors]);
-    }
-
-    public function add(Request $request)
-    {
-        // Validasi data input
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'alamat' => 'required|string|max:255',
-            'nomor_hp' => 'required|string|max:20',
-        ]);
-
-        // Membuat user baru dengan peran dokter
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make('12345678'), // Menggunakan hashing untuk password
-            'role' => 'doctor',
-            'alamat' => $request->alamat,
-            'nomor_hp' => $request->nomor_hp,
-        ]);
-
-        // Jika role adalah doctor, tambahkan klinik
-        if ($user->role == 'doctor') {
-            Klinik::create([
-                'user_id' => $user->id, // Menggunakan ID dokter yang baru dibuat
-                'nama_klinik' => "Klinik Dr. " . $request->name, // Nama Klinik di-generate
-                'alamat_klinik' => $request->alamat, // Menggunakan alamat dokter
-                'deskripsi_klinik' => "Deskripsi otomatis untuk Klinik Dr. " . $request->name, // Deskripsi default
-            ]);
-        }
-
-        return redirect()->route('doctors')->with('success', 'Doctor and Clinic created successfully.');
-    }
-
-    public function edit($id)
-    {
-        $doctor = User::findOrFail($id);
-        return view('pages.users.dokter.edit', ['doctor' => $doctor]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
-            'alamat' => 'nullable|string|max:255',
-            'nomor_hp' => 'nullable|string|max:15',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        $role = $request->query('role', 'dokter');
 
         try {
-            $doctor = User::findOrFail($id);
-            $doctor->name = $request->name;
-            $doctor->email = $request->email;
-            $doctor->alamat = $request->alamat;
-            $doctor->nomor_hp = $request->nomor_hp;
-
-            if ($request->hasFile('foto')) {
-                // Hapus foto lama jika ada
-                if ($doctor->foto) {
-                    Storage::delete('public/fotos/' . $doctor->foto);
-                }
-
-                // Simpan foto baru
-                $imageName = time().'.'.$request->foto->extension();
-                $request->foto->storeAs('public/fotos', $imageName);
-                $doctor->foto = $imageName;
-            }
-
-            $doctor->save();
-
-            return redirect()->route('doctors', $doctor->id)->with('success', 'Doctor updated successfully');
+            $users = $this->database->getReference($this->tablename)->orderByChild('role')->equalTo($role)->getValue();
+            return view('pages.users.dokter.index', compact('users'));
         } catch (\Exception $e) {
-            // Jika ada error saat update, kembali ke halaman sebelumnya dengan pesan error
-            return redirect()->back()->with('error', 'Failed to update doctor. Please try again.')->withInput();
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email|max:255',
+            'displayName' => 'required|string|max:255',
+            'phoneNumber' => 'required|string|min:10|max:15',
+            'alamat' => 'required|string',
+        ]);
+
+        $email = $request->input('email');
+        $displayName = $request->input('displayName');
+        $phoneNumber = $request->input('phoneNumber');
+        $alamat = $request->input('alamat');
+        $password = '12121212';
+
+        try {
+            $createdUser = $this->firebaseAuth->createUserWithEmailAndPassword($email, $password);
+            $uid = $createdUser->uid;
+            $userData = [
+                'email' => $email,
+                'password' => Hash::make($password),
+                'displayName' => $displayName,
+                'phoneNumber' => $phoneNumber,
+                'alamat' => $alamat,
+                'role' => 'dokter',
+            ];
+            $this->database->getReference($this->tablename . '/' . $uid)->set($userData);
+            return redirect()->back()->with('success', 'Berhasil menambahkan dokter');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 
     public function destroy($id)
     {
-        $doctor = User::findOrFail($id);
-
-        if ($doctor->role !== 'doctor') {
-            return redirect()->route('doctors')->with('error', 'User is not a doctor.');
+        try {
+            $this->firebaseAuth->deleteUser($id);
+            $this->database->getReference($this->tablename . '/' . $id)->remove();
+            return redirect()->back()->with('success', 'Dokter berhasil di hapus');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
+    }
 
-        $doctor->delete();
+    public function edit($id)
+    {
+        $key = $id;
+        $users = $this->database->getReference($this->tablename)->getChild($key)->getValue();
+        return view('pages.users.dokter.edit', compact('users', 'key'));
+    }
 
-        return redirect()->route('doctors')->with('success', 'Doctor deleted successfully.');
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'displayName' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'alamat' => 'nullable|string|max:255',
+            'phoneNumber' => 'nullable|string|max:15',
+        ]);
+
+        $properties = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+        ];
+
+        $updateData = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+            'alamat' => $request->alamat,
+            'phoneNumber' => $request->phoneNumber,
+        ];
+
+        try {
+            $this->firebaseAuth->updateUser($id, $properties);
+            $this->database->getReference($this->tablename . '/' . $id)->update($updateData);
+            return redirect()->route('doctors')->with('success', 'Berhasil mengupdate data');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to update user in Firebase Database: ' . $e->getMessage()]);
+        }
+    }
+
+    public function sendmess($token)
+    {
+        $deviceToken = $token;
+        $message = CloudMessage::withTarget('token', $deviceToken)
+            ->withNotification(Notification::create('selamat malm', 'asasasas'))
+            ->withData(['key' => 'value']);
+        $this->messaging->send($message);
     }
 }

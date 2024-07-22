@@ -2,10 +2,13 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Dokter\DokterController;
 use App\Http\Controllers\Api\Klinik\KlinikController;
+use App\Http\Controllers\Api\Pasien\PasienController;
 use App\Http\Controllers\Api\Antrian\AntrianController;
+use App\Http\Controllers\Api\Notification\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +27,7 @@ use App\Http\Controllers\Api\Antrian\AntrianController;
 
 Route::post('auth/login', [AuthController::class,'login']);
 Route::post('auth/register', [AuthController::class,'register']);
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/me', [AuthController::class,'me']);
@@ -33,4 +37,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('auth/doctor/antrian', [AntrianController::class, 'tampilkanAntrian']);
     Route::get('/pasien/doctors', [DokterController::class, 'index']);
     Route::get('/pasien/dokter/{id}', [DokterController::class, 'show']);
+    Route::put('/antrian/{id}/batal', [AntrianController::class, 'updateStatusBatal']);
+    //pasien controller
+    Route::put('/auth/pasiens/update', [PasienController::class, 'update']);
+    Route::get('/auth/pasiens/profile', [PasienController::class, 'show']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
 });

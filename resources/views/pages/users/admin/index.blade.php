@@ -1,5 +1,5 @@
 @extends('other.layouts.app')
-@section('navbar-title', 'Tabel admin')
+@section('navbar-title', 'Tabel Admin')
 @section('content')
     <!-- Content wrapper -->
     <div class="content-wrapper">
@@ -25,101 +25,87 @@
                 @include('pages.users.admin.add')
             </div>
             <div class="card">
-                <div class="table-responsive text-nowrap">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Foto</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Nomor Handphone</th>
-                                <th>Alamat</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0">
-                            @foreach ($admins as $admin)
+                @if ($users == null)
+                    <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
+                        Tidak ada dokter yang terdaftar silahkan tambahkan dokter
+                    </div>
+                @else
+                    <div class="table-responsive text-nowrap">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>
-                                        <div class="user-panel">
-                                            <div class="image" style="width: 50px; height: 50px; overflow: hidden;">
-                                                @if ($admin->foto)
-                                                    <img src="{{ asset('storage/fotos/' . $admin->foto) }}"
-                                                        alt="{{ $admin->name }}" style="width: 100%;">
-                                                @else
-                                                    <img src="{{ asset('storage/logo/user.png') }}" class="img-circle"
-                                                        alt="Default Foto" style="width: 100%;">
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{{ $admin->name }}</td>
-                                    <td>{{ $admin->email }}</td>
-                                    <td>{{ $admin->nomor_hp }}</td>
-                                    <td>
-                                        <div style="width: 100px; overflow: hidden; text-overflow: ellipsis;">
-                                            {{ $admin->alamat }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="col-md-6">
-                                            <div class="demo-inline-spacing d-flex align-items-center">
-                                                <a href="{{ route('admins.edit', $admin->id) }}"
-                                                    class="btn rounded-pill btn-icon btn-primary">
-                                                    <i class="tf-icons bx bx-edit-alt"></i>
-                                                </a>
-                                                {{-- <form action="{{ route('admins.destroy', $admin->id) }}" method="POST"
-                                                    style="display:inline;" class="delete-form">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn rounded-pill btn-icon btn-danger">
+                                    <th>No</th>
+                                    <th>Foto</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Nomor Handphone</th>
+                                    <th>Alamat</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-border-bottom-0">
+                                @foreach ($users as $key => $item)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $item['url'] ?? '' }}</td>
+                                        <td>{{ $item['displayName'] ?? '' }}</td>
+                                        <td>{{ $item['email'] ?? '' }}</td>
+                                        <td>{{ $item['phoneNumber'] ?? '' }}</td>
+                                        <td>
+                                            <div style="width: 100px; overflow: hidden; text-overflow: ellipsis;">
+                                                {{ $item['alamat'] ?? '' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="col-md-6">
+                                                <div class="align-items-center">
+                                                    <a href="{{ route('admins.edit', $key) }}"
+                                                        class="btn rounded-pill btn-icon btn-primary">
+                                                        <i class="tf-icons bx bx-edit-alt"></i>
+                                                    </a>
+                                                    <button type="button" class="btn rounded-pill btn-icon btn-danger"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#confirmDeleteModal{{ $key }}">
                                                         <i class="tf-icons bx bx-trash"></i>
                                                     </button>
-                                                </form> --}}
-                                                <button type="button" class="btn rounded-pill btn-icon btn-danger"
-                                                    data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                                                    <i class="tf-icons bx bx-trash"></i>
-                                                </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Modal for Confirmation -->
+                                    <div class="modal fade" id="confirmDeleteModal{{ $key }}" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <form id="deleteForm{{ $key }}" method="POST"
+                                                    action="{{ route('doctors.destroy', $key) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <div class="modal-body">
+                                                        Apakah Anda yakin ingin menghapus dokter ini?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Tidak</button>
+                                                        <button type="submit" class="btn btn-danger">Iya</button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                {{-- <div class="card-footer clearfix">
-                    <ul class="pagination pagination m-0 float-right">
-                        {!! $doctors->links('pagination::bootstrap-4') !!}
-                    </ul>
-                </div> --}}
+                                    </div>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
     @include('other.alert.success')
     @include('other.alert.error')
-    <!-- Modal Konfirmasi Hapus -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Konfirmasi Hapus</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="deleteForm" method="POST" action="{{ route('admins.destroy', $admin->id) }}">
-                    @csrf
-                    @method('DELETE')
-                    <div class="modal-body">
-                        Apakah Anda yakin ingin menghapus pengguna ini?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
-                        <button type="submit" class="btn btn-danger">Iya</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 @endsection

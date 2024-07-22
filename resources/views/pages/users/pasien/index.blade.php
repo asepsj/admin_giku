@@ -1,97 +1,150 @@
 @extends('other.layouts.app')
-@section('navbar-title', 'Tabel Pasien')
+@section('navbar-title', 'Tabel Admin')
 @section('content')
     <!-- Content wrapper -->
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <div class="mb-3 row">
-                <div class="col-md-5">
-                    <form action="{{ route('pasiens') }}" method="GET">
-                        <div class="input-group input-group-merge">
-                            <input type="text" class="form-control" name="table_search"
-                                value="{{ request('table_search') }}" placeholder="Search..." aria-label="Search..."
-                                aria-describedby="basic-addon-search31" />
-                            <button type="submit" class="input-group-text" id="basic-addon-search31"><i
-                                    class="bx bx-search"></i></button>
-                        </div>
-                    </form>
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1 me-3">
+                        <form action="{{ route('admins') }}" method="GET">
+                            <div class="input-group input-group-merge w-100">
+                                <input type="text" class="form-control" name="table_search"
+                                    value="{{ request('table_search') }}" placeholder="Search..." aria-label="Search..."
+                                    aria-describedby="basic-addon-search31" />
+                                <button type="submit" class="input-group-text" id="basic-addon-search31"><i
+                                        class="bx bx-search"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCenter">
+                        Tambah Admin
+                    </button>
                 </div>
+                @include('pages.users.admin.add')
             </div>
             <div class="card">
-                <p></p>
-                <div class="table-responsive text-nowrap">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Foto</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Nomor Handphone</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0">
-                            @foreach ($pasiens as $pasien)
+                @if ($users == null)
+                    <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
+                        Tidak ada dokter yang terdaftar silahkan tambahkan dokter
+                    </div>
+                @else
+                    <div class="table-responsive text-nowrap">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>
-                                        <div class="user-panel">
-                                            {{-- <div class="image" style="width: 50px; height: 50px; overflow: hidden;"> --}}
-                                            <div class="d-flex align-items-start align-items-sm-center gap-4">
-                                                @if ($pasien->foto)
-                                                    <img src="{{ asset('storage/fotos/' . $pasien->foto) }}"
-                                                        alt="{{ $pasien->name_pasien }}" class="img-circle d-block rounded"
-                                                        height="50" width="50">
-                                                @else
-                                                    <img src="{{ asset('storage/logo/user.png') }}"
-                                                        class="img-circle d-block rounded" height="50" width="50">
-                                                @endif
+                                    <th>No</th>
+                                    <th>Foto</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Nomor Handphone</th>
+                                    <th>Alamat</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-border-bottom-0">
+                                @foreach ($users as $key => $item)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $item['url'] ?? '' }}</td>
+                                        <td>{{ $item['displayName'] ?? '' }}</td>
+                                        <td>{{ $item['email'] ?? '' }}</td>
+                                        <td>{{ $item['phoneNumber'] ?? '' }}</td>
+                                        <td>
+                                            <div style="width: 100px; overflow: hidden; text-overflow: ellipsis;">
+                                                {{ $item['alamat'] ?? '' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="col-md-6">
+                                                <div class="align-items-center">
+                                                    <a href="{{ route('pasiens.edit', $key) }}"
+                                                        class="btn rounded-pill btn-icon btn-primary">
+                                                        <i class="tf-icons bx bx-edit-alt"></i>
+                                                    </a>
+                                                    <button type="button" class="btn rounded-pill btn-icon btn-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                                        <i class="tf-icons bx bx-trash"></i>
+                                                    </button>
+                                                    <button type="button" class="btn rounded-pill btn-icon btn-success"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#sendMessageModal-{{ $key }}">
+                                                        <i class="tf-icons bx bx-send"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Modal Konfirmasi Hapus -->
+                                    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <form id="deleteForm" method="POST"
+                                                    action="{{ route('pasiens.destroy', $key) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <div class="modal-body">
+                                                        Apakah Anda yakin ingin menghapus pengguna ini?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Tidak</button>
+                                                        <button type="submit" class="btn btn-danger">Iya</button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
-                </div>
-                </td>
-                <td>{{ $pasien->name_pasien }}</td>
-                <td>{{ $pasien->email_pasien }}</td>
-                <td>{{ $pasien->nomor_hp }}</td>
-                <td>
-                    <div class="col-md-6">
-                        <div class="demo-inline-spacing d-flex align-items-center">
-                            <a href="{{ route('pasiens.edit', $pasien->id) }}"
-                                class="btn rounded-pill btn-icon btn-primary">
-                                <i class="tf-icons bx bx-edit-alt"></i>
-                            </a>
-                            <a href="{{ route('pasiens.show', $pasien->id) }}" class="btn rounded-pill btn-icon btn-info">
-                                <i class="bx bx-show-alt"></i>
-                            </a>
-                            <form action="{{ route('pasiens.destroy', $pasien->id) }}" method="POST"
-                                style="display:inline;"
-                                onsubmit="return confirm('Are you sure you want to delete this pasien?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn rounded-pill btn-icon btn-danger">
-                                    <i class="tf-icons bx bx-trash"></i>
-                                </button>
-                            </form>
-                        </div>
+                                    </div>
+
+                                    <!-- Modal Kirim Pesan -->
+                                    <div class="modal fade" id="sendMessageModal-{{ $key }}" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Kirim Pesan</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <form id="sendMessageForm" method="POST"
+                                                    action="{{ route('pasiens.send-message', $item['fcm_token']) }}">
+                                                    @csrf
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                            <label for="message">Pesan</label>
+                                                            <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">Batal</button>
+                                                        <button type="submit" class="btn btn-success">Kirim</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                </td>
-                </tr>
-                @endforeach
-                </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="card mt-3">
-            <div class="card-footer clearfix">
-                <div class="d-flex justify-content-end">
-                    <ul class="pagination m-0">
-                        {!! $pasiens->links('pagination::bootstrap-4') !!}
-                    </ul>
-                </div>
+                @endif
             </div>
         </div>
     </div>
-    </div>
+    @include('other.alert.success')
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show position-fixed bottom-0 end-0 m-3" role="alert"
+            style="z-index: 1050;">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
 @endsection

@@ -6,109 +6,106 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Kreait\Firebase\Contract\Database;
 use Illuminate\Support\Facades\Storage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class AdminsController extends Controller
 {
+    private $firebaseAuth;
+    public function __construct(Database $database)
+    {
+        $this->database = $database;
+        $this->tablename = 'users';
+        $this->firebaseAuth = Firebase::auth();
+    }
+
     public function index(Request $request)
     {
-        // Ambil nilai pencarian dari request
-        $search = $request->input('table_search');
-
-        // Jika ada nilai pencarian, filter data admin
-        if ($search) {
-            $admins = User::where('role', 'admin')
-                ->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                })
-                ->get();
-        } else {
-            // Jika tidak ada nilai pencarian, ambil semua data admin
-            $admins = User::where('role', 'admin')->get();
-        }
-
-        // Kirim data admin ke tampilan blade
-        return view('pages.users.admin.index', ['admins' => $admins]);
-    }
-
-    public function add(Request $request)
-    {
-        // Validasi data input
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-        ]);
+        $role = $request->query('role', 'admin');
 
         try {
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make('12345678'),
-                'role' => 'admin',
-            ]);
-
-            return redirect()->route('admins')->with('success', 'Admin created successfully.');
-            
+            $users = $this->database->getReference($this->tablename)->orderByChild('role')->equalTo($role)->getValue();
+            return view('pages.users.admin.index', compact('users'));
         } catch (\Exception $e) {
-            return redirect()->route('admins')->with('error', 'Failed to create admin: ' . $e->getMessage());
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email|max:255',
+            'displayName' => 'required|string|max:255',
+            'phoneNumber' => 'required|string|min:10|max:15',
+        ]);
+
+        $email = $request->input('email');
+        $displayName = $request->input('displayName');
+        $phoneNumber = $request->input('phoneNumber');
+        $password = '12121212';
+
+        try {
+            $createdUser = $this->firebaseAuth->createUserWithEmailAndPassword($email, $password);
+            $uid = $createdUser->uid;
+            $userData = [
+                'email' => $email,
+                'password' => Hash::make($password),
+                'displayName' => $displayName,
+                'phoneNumber' => $phoneNumber,
+                'role' => 'admin',
+            ];
+            $this->database->getReference($this->tablename . '/' . $uid)->set($userData);
+            return redirect()->back()->with('success', 'Berhasil menambahkan admin');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
     public function edit($id)
     {
-        $admin = User::findOrFail($id);
-        return view('pages.users.admin.edit', ['admin' => $admin]);
+        $key = $id;
+        $users = $this->database->getReference($this->tablename)->getChild($key)->getValue();
+        return view('pages.users.admin.edit', compact('users', 'key'));
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'displayName' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
             'alamat' => 'nullable|string|max:255',
-            'nomor_hp' => 'nullable|string|max:15',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'phoneNumber' => 'nullable|string|max:15',
         ]);
 
+        $properties = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+        ];
+
+        $updateData = [
+            'displayName' => $request->displayName,
+            'email' => $request->email,
+            'alamat' => $request->alamat,
+            'phoneNumber' => $request->phoneNumber,
+        ];
+
         try {
-            $admin = User::findOrFail($id);
-            $admin->name = $request->name;
-            $admin->email = $request->email;
-            $admin->alamat = $request->alamat;
-            $admin->nomor_hp = $request->nomor_hp;
-
-            if ($request->hasFile('foto')) {
-                // Hapus foto lama jika ada
-                if ($admin->foto) {
-                    Storage::delete('public/fotos/' . $admin->foto);
-                }
-
-                // Simpan foto baru
-                $imageName = time().'.'.$request->foto->extension();
-                $request->foto->storeAs('public/fotos', $imageName);
-                $admin->foto = $imageName;
-            }
-
-            $admin->save();
-
-            return redirect()->route('admins', $admin->id)->with('success', 'Doctor updated successfully');
+            $this->firebaseAuth->updateUser($id, $properties);
+            $this->database->getReference($this->tablename . '/' . $id)->update($updateData);
+            return redirect()->route('admins')->with('success', 'Berhasil mengupdate data');
         } catch (\Exception $e) {
-            // Jika ada error saat update, kembali ke halaman sebelumnya dengan pesan error
-            return redirect()->back()->with('error', 'Failed to update doctor. Please try again.')->withInput();
+            return back()->withErrors(['error' => 'Failed to update user in Firebase Database: ' . $e->getMessage()]);
         }
     }
 
     public function destroy($id)
     {
-        $admin = User::findOrFail($id);
-
-        if ($admin->role !== 'admin') {
-            return redirect()->route('admins')->with('error', 'User is not a doctor.');
+        try {
+            $this->firebaseAuth->deleteUser($id);
+            $this->database->getReference($this->tablename . '/' . $id)->remove();
+            return redirect()->back()->with('success', 'Admin berhasil di hapus');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
-
-        $admin->delete();
-
-        return redirect()->route('admins')->with('success', 'Doctor deleted successfully.');
     }
 }
