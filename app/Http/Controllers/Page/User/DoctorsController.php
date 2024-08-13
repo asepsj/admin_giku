@@ -17,6 +17,8 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 class DoctorsController extends Controller
 {
     private $firebaseAuth;
+    private $tablename;
+    private $database;
     public function __construct(Database $database, Messaging $messaging)
     {
         $this->database = $database;
@@ -28,9 +30,19 @@ class DoctorsController extends Controller
     public function index(Request $request)
     {
         $role = $request->query('role', 'dokter');
+        $search = $request->query('table_search');
 
         try {
-            $users = $this->database->getReference($this->tablename)->orderByChild('role')->equalTo($role)->getValue();
+            $query = $this->database->getReference($this->tablename)->orderByChild('role')->equalTo($role);
+
+            if ($search) {
+                $users = array_filter($query->getValue(), function ($user) use ($search) {
+                    return stripos($user['displayName'] ?? '', $search) !== false;
+                });
+            } else {
+                $users = $query->getValue();
+            }
+
             return view('pages.users.dokter.index', compact('users'));
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -63,6 +75,8 @@ class DoctorsController extends Controller
                 'alamat' => $alamat,
                 'role' => 'dokter',
             ];
+            $this->firebaseAuth->updateUser($uid, ['displayName' => $displayName]);
+            $this->firebaseAuth->setCustomUserClaims($uid, ['role' => 'dokter']);
             $this->database->getReference($this->tablename . '/' . $uid)->set($userData);
             return redirect()->back()->with('success', 'Berhasil menambahkan dokter');
         } catch (\Exception $e) {

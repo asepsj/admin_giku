@@ -5,24 +5,24 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Kreait\Laravel\Firebase\Facades\Firebase;
-use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 
 class FirebaseAuthMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next, $role = null)
     {
         try {
             $firebaseAuth = Firebase::auth();
-            $idToken = $request->session()->get('firebase_id_token');
+            $id = $request->session()->get('uid');
 
-            if (!$idToken) {
+            if (!$id) {
                 return redirect()->route('login')->withErrors(['error' => 'Unauthenticated']);
             }
 
-            try {
-                $firebaseAuth->verifyIdToken($idToken);
-            } catch (FailedToVerifyToken $e) {
-                return redirect()->route('login')->withErrors(['error' => 'The token is invalid: ' . $e->getMessage()]);
+            $firebaseUser = $firebaseAuth->getUser($id);
+            $userRole = $firebaseUser->customClaims['role'] ?? null;
+
+            if (!$userRole || ($role && $userRole !== $role)) {
+                return redirect()->route('login')->withErrors(['error' => 'Unauthorized']);
             }
 
             return $next($request);

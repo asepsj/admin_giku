@@ -27,7 +27,7 @@
             <div class="card">
                 @if ($users == null)
                     <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
-                        Tidak ada dokter yang terdaftar silahkan tambahkan dokter
+                        Tidak ada dokter yang terdaftar
                     </div>
                 @else
                     <div class="table-responsive text-nowrap">
@@ -35,7 +35,7 @@
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    {{-- <th>Foto</th> --}}
+                                    <th>Foto</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Nomor Handphone</th>
@@ -48,6 +48,15 @@
                                 @foreach ($users as $key => $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            @if ($item['foto'])
+                                                <img src="{{ $item['foto'] }}" alt="Profile Image"
+                                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                            @else
+                                                <img src="path/to/default/image.jpg" alt="Default Image"
+                                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                            @endif
+                                        </td>
                                         <td>{{ $item['displayName'] ?? '' }}</td>
                                         <td>{{ $item['email'] ?? '' }}</td>
                                         <td>{{ $item['phoneNumber'] ?? '' }}</td>
@@ -59,6 +68,10 @@
                                                     <a href="{{ route('doctors.edit', $key) }}"
                                                         class="btn rounded-pill btn-icon btn-primary">
                                                         <i class="tf-icons bx bx-edit-alt"></i>
+                                                    </a>
+                                                    <a href="{{ route('jadwal', ['doctor_id' => $key]) }}"
+                                                        class="btn rounded-pill btn-icon btn-info">
+                                                        <i class="tf-icons bx bx-list-ul"></i>
                                                     </a>
 
                                                     <!-- Delete Button -->
@@ -116,6 +129,4 @@
             </div> --}}
         </div>
     </div>
-    @include('other.alert.success')
-    @include('other.alert.error')
 @endsection

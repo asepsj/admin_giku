@@ -18,33 +18,36 @@
         <ul class="navbar-nav flex-row align-items-center ms-auto">
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                    @if (!empty($authUser['foto']))
-                        <div class="avatar avatar-online">
-                            <img src="{{ $authUser['foto'] }}" alt class="w-px-40 h-auto rounded-circle" />
-                        </div>
-                    @else
-                        <img src="{{ asset('storage/logo/user.png') }}" alt="user-avatar" class="d-block rounded"
-                            height="40" width="40" id="uploadedAvatar">
-                    @endif
+                    <div class="avatar avatar-online">
+                        @if (!empty($authUser['foto']))
+                            <div class="avatar-wrapper">
+                                <img src="{{ $authUser['foto'] }}" alt class="avatar-img" />
+                            </div>
+                        @else
+                            <div class="avatar-wrapper">
+                                <img src="{{ asset('storage/logo/user.png') }}" alt="user-avatar" class="avatar-img">
+                            </div>
+                        @endif
+                    </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item" href="{{ route('profile') }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        @if (!empty($authUser['foto']))
-                                            <img src="{{ $authUser['foto'] }}" alt
-                                                class="w-px-40 h-auto rounded-circle" />
-                                        @else
-                                            <img src="{{ asset('storage/logo/user.png') }}" alt
-                                                class="w-px-40 h-auto rounded-circle">
-                                        @endif
+                                        <div class="avatar-wrapper">
+                                            @if (!empty($authUser['foto']))
+                                                <img src="{{ $authUser['foto'] }}" alt class="avatar-img" />
+                                            @else
+                                                <img src="{{ asset('storage/logo/user.png') }}" alt
+                                                    class="avatar-img">
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <span
-                                        class="fw-semibold d-block">{{ substr($authUser['displayName'], 0, 8) }}</span>
+                                    <span class="fw-semibold d-block">{{ substr($authUser['displayName'], 0, 8) }}</span>
                                     <small class="text-muted">{{ $authUser['role'] }}</small>
                                 </div>
                             </div>
@@ -56,13 +59,13 @@
                     <li>
                         <a class="dropdown-item" href="{{ route('profile') }}">
                             <i class="bx bx-user me-2"></i>
-                            <span class="align-middle">My Profile</span>
+                            <span class="align-middle">Profil Saya</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="{{ route('profile.setting') }}">
                             <i class="bx bx-cog me-2"></i>
-                            <span class="align-middle">Settings</span>
+                            <span class="align-middle">Pengaturan</span>
                         </a>
                     </li>
                     <li>
@@ -72,7 +75,7 @@
                         <a class="dropdown-item" href="javascript:void(0);"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="bx bx-power-off me-2"></i>
-                            <span class="align-middle">Log Out</span>
+                            <span class="align-middle">Keluar</span>
                         </a>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             @csrf
@@ -83,3 +86,22 @@
         </ul>
     </div>
 </nav>
+
+<style>
+    .avatar-wrapper {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        overflow: hidden;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #696CFF; 
+    }
+
+    .avatar-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+</style>

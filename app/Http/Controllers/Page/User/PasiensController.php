@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Kreait\Firebase\Contract\Database;
 use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Contract\Messaging;
+use Illuminate\Support\Facades\Hash;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class PasiensController extends Controller
@@ -21,10 +22,51 @@ class PasiensController extends Controller
         $this->firebaseAuth = Firebase::auth();
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->database->getReference($this->tablename)->getValue();
+        $search = $request->input('table_search');
+
+        if ($search) {
+            $users = $this->database->getReference($this->tablename)
+                ->orderByChild('displayName')
+                ->startAt($search)
+                ->endAt($search . "\uf8ff")
+                ->getValue();
+        } else {
+            $users = $this->database->getReference($this->tablename)->getValue();
+        }
+
         return view('pages.users.pasien.index', compact('users'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email|max:255',
+            'displayName' => 'required|string|max:255',
+            'phoneNumber' => 'required|string|min:10|max:15',
+        ]);
+
+        $email = $request->input('email');
+        $displayName = $request->input('displayName');
+        $phoneNumber = $request->input('phoneNumber');
+        $password = '12121212';
+
+        try {
+            $createdUser = $this->firebaseAuth->createUserWithEmailAndPassword($email, $password);
+            $uid = $createdUser->uid;
+            $userData = [
+                'email' => $email,
+                'password' => Hash::make($password),
+                'displayName' => $displayName,
+                'phoneNumber' => $phoneNumber,
+            ];
+            $this->firebaseAuth->updateUser($uid, ['displayName' => $displayName]);
+            $this->database->getReference($this->tablename . '/' . $uid)->set($userData);
+            return redirect()->back()->with('success', 'Berhasil menambahkan pasien');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     public function edit($id)

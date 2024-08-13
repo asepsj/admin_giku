@@ -55,6 +55,7 @@ class RegisterController extends Controller
             $createdUser = $this->firebaseAuth->createUserWithEmailAndPassword($email, $password);
             $uid = $createdUser->uid;
             $this->firebaseAuth->updateUser($uid, $properties);
+            $this->firebaseAuth->setCustomUserClaims($uid, ['role' => 'admin']);
             $this->database->getReference($this->tablename . '/' . $uid)->set($userData);
             return redirect()->intended('/login')->with('success', 'Berhasil menambahkan akun.');
         } catch (\Exception $e) {

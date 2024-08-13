@@ -43,6 +43,13 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('assets/js/config.js') }}"></script>
+    <!-- Include SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .swal2-container {
+            z-index: 9999 !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -83,6 +90,61 @@
         <a href="https://themeselection.com/products/sneat-bootstrap-html-admin-template/" target="_blank"
             class="btn btn-danger btn-buy-now">Upgrade to Pro</a>
     </div> --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function toggleTimeFields(checkbox) {
+                const modalBody = checkbox.closest('.modal-body');
+                const startTimeGroup = modalBody.querySelector('#start-time-group');
+                const endTimeGroup = modalBody.querySelector('#end-time-group');
+                const startTimeSelect = modalBody.querySelector('#waktu_mulai');
+                const endTimeSelect = modalBody.querySelector('#waktu_selesai');
+
+                if (checkbox.checked) {
+                    startTimeGroup.style.display = 'none';
+                    endTimeGroup.style.display = 'none';
+                    startTimeSelect.removeAttribute('required');
+                    endTimeSelect.removeAttribute('required');
+                } else {
+                    startTimeGroup.style.display = 'block';
+                    endTimeGroup.style.display = 'block';
+                    startTimeSelect.setAttribute('required', 'required');
+                    endTimeSelect.setAttribute('required', 'required');
+                }
+            }
+
+            const checkboxes = document.querySelectorAll('.form-check-input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                toggleTimeFields(checkbox);
+                checkbox.addEventListener('change', () => toggleTimeFields(checkbox));
+            });
+        });
+    </script>
+
+    <script>
+        function showPopup(type, title, text) {
+            Swal.fire({
+                icon: type,
+                title: title,
+                text: text,
+            });
+        }
+
+        // Show success message from the backend
+        @if (session('success'))
+            showPopup('success', 'Berhasil', '{{ session('success') }}');
+        @endif
+
+        // Show error message from the backend
+        @if (session('error'))
+            showPopup('error', 'Gagal !!', '{{ session('error') }}');
+        @endif
+
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                showPopup('error', 'Error', '{{ $error }}');
+            @endforeach
+        @endif
+    </script>
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->

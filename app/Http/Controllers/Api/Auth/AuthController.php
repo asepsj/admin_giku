@@ -65,7 +65,7 @@ class AuthController extends Controller
         $this->response['message'] = 'success';
         $this->response['data'] = [
             'token' => $token,
-            'pasien_id' => $user->id // Assuming pasien_id is 'id' field of Pasien model
+            'pasien_id' => $user->id
         ];
 
         return response()->json($this->response, 200);

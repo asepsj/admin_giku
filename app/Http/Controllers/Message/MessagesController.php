@@ -10,30 +10,36 @@ use Kreait\Firebase\Messaging\Notification;
 
 class MessagesController extends Controller
 {
+    protected $messaging;
+
     public function __construct()
     {
         $this->messaging = Firebase::messaging();
     }
 
-    public function send(Request $request, $key)
+    public function send(Request $request, $deviceToken)
     {
         $messageContent = $request->input('message');
+        $messageTitle = $request->input('title');
 
-        // Mengambil pengguna berdasarkan ID ($key)
-        $token = $key;
-
-        // Dapatkan token FCM pengguna
-        // $token = $user->fcm_token;
-
-        // Buat pesan
-        $deviceToken = $token;
         $message = CloudMessage::withTarget('token', $deviceToken)
-            ->withNotification(Notification::create('selamat malm', $messageContent))
-            ->withData(['key' => 'value']);
+            ->withNotification(Notification::create($messageTitle, $messageContent))
+            ->withData(['key' => 'value']);  // Add any additional data if needed
+
         try {
             $this->messaging->send($message);
+            \Log::info('FCM message sent successfully.', [
+                'deviceToken' => $deviceToken,
+                'title' => $messageTitle,
+                'message' => $messageContent
+            ]);
             return redirect()->back()->with('success', 'Pesan berhasil dikirim!');
         } catch (\Exception $e) {
+            \Log::error('FCM send error: ' . $e->getMessage(), [
+                'deviceToken' => $deviceToken,
+                'title' => $messageTitle,
+                'message' => $messageContent
+            ]);
             return redirect()->back()->with('error', 'Gagal mengirim pesan: ' . $e->getMessage());
         }
     }

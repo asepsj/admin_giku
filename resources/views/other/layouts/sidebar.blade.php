@@ -5,7 +5,7 @@
                 <img src="{{ asset('assets/img/logo/logo.png') }}" alt="Brand Logo" width="25">
             </span>
             <span class="menu-text fw-bolder ms-1">Giku</span>
-            {{-- <p class="h6 pt-4 ms-1"> ({{ $authUser->role }})</p> --}}
+            <p class="h6 pt-4 ms-1"> ({{ $authUser['role'] }})</p>
         </a>
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
             <i class="bx bx-chevron-left bx-sm align-middle"></i>
@@ -22,30 +22,38 @@
             </a>
         </li>
         <li
-            class="menu-item menu-item {{ request()->routeIs('klinik') || request()->routeIs('profile') || request()->routeIs('profile.setting') ? 'active open' : '' }}">
+            class="menu-item menu-item {{ request()->routeIs('jadwal-kerja') || request()->routeIs('jadwal-libur') || request()->routeIs('profile') || request()->routeIs('profile.setting') ? 'active open' : '' }}">
             <a href="#" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-user"></i>
-                <div data-i18n="Extended UI">Profile</div>
+                <div data-i18n="Extended UI">Profil</div>
             </a>
             <ul class="menu-sub">
                 <li class="menu-item {{ request()->routeIs('profile') ? 'active' : '' }}">
                     <a href="{{ route('profile') }}" class="menu-link">
-                        <div data-i18n="Perfect Scrollbar">My Profile</div>
+                        <div data-i18n="Perfect Scrollbar">Profile Saya</div>
                     </a>
                 </li>
                 <li class="menu-item {{ request()->routeIs('profile.setting') ? 'active' : '' }}">
                     <a href="{{ route('profile.setting') }}" class="menu-link">
-                        <div data-i18n="Text Divider">Setting</div>
+                        <div data-i18n="Text Divider">Pengaturan</div>
                     </a>
                 </li>
+                @if ($authUser['role'] === 'dokter')
+                    <li
+                        class="menu-item {{ request()->routeIs('jadwal-kerja') || request()->routeIs('jadwal-libur') ? 'active' : '' }}">
+                        <a href="{{ route('jadwal-kerja') }}" class="menu-link">
+                            <div data-i18n="Jadwal Kerja">Jadwal Kerja</div>
+                        </a>
+                    </li>
+                @endif
             </ul>
         </li>
         @if ($authUser['role'] === 'admin')
             <li
-                class="menu-item {{ request()->routeIs('admins') || request()->routeIs('doctors') || request()->routeIs('pasiens') ? 'active open' : '' }}">
+                class="menu-item {{ request()->routeIs('admins') || request()->routeIs('doctors') || request()->routeIs('pasiens') || request()->routeIs('jadwal') ? 'active open' : '' }}">
                 <a href="#" class="menu-link menu-toggle">
                     <i class="menu-icon tf-icons bx bx-group"></i>
-                    <div data-i18n="Extended UI">User</div>
+                    <div data-i18n="Extended UI">Kelola Pengguna</div>
                 </a>
                 <ul class="menu-sub">
                     <li class="menu-item {{ request()->routeIs('admins') ? 'active' : '' }}">
@@ -53,7 +61,8 @@
                             <div data-i18n="Text Divider">Admin</div>
                         </a>
                     </li>
-                    <li class="menu-item {{ request()->routeIs('doctors') ? 'active' : '' }}">
+                    <li
+                        class="menu-item {{ request()->routeIs('doctors') || request()->routeIs('jadwal') ? 'active' : '' }}">
                         <a href="{{ route('doctors') }}" class="menu-link">
                             <div data-i18n="Perfect Scrollbar">Doctor</div>
                         </a>
@@ -66,7 +75,7 @@
                 </ul>
             </li>
         @endif
-        {{-- @if ($authUser->role === 'doctor') --}}
+        @if ($authUser['role'] === 'dokter')
             <li
                 class="menu-item menu-item {{ request()->routeIs('jadwal') || request()->routeIs('antrian.riwayat') ? 'active open' : '' }}">
                 <a href="#" class="menu-link menu-toggle">
@@ -86,7 +95,7 @@
                     </li>
                 </ul>
             </li>
-        {{-- @endif --}}
+        @endif
         <li class="menu-item">
             <a href="#" class="menu-link"
                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

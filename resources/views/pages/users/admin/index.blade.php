@@ -27,7 +27,7 @@
             <div class="card">
                 @if ($users == null)
                     <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
-                        Tidak ada dokter yang terdaftar silahkan tambahkan dokter
+                        Tidak ada admin yang terdaftar
                     </div>
                 @else
                     <div class="table-responsive text-nowrap">
@@ -47,7 +47,15 @@
                                 @foreach ($users as $key => $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item['url'] ?? '' }}</td>
+                                        <td>
+                                            @if ($item['foto'])
+                                                <img src="{{ $item['foto'] }}" alt="Profile Image"
+                                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                            @else
+                                                <img src="path/to/default/image.jpg" alt="Default Image"
+                                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                            @endif
+                                        </td>
                                         <td>{{ $item['displayName'] ?? '' }}</td>
                                         <td>{{ $item['email'] ?? '' }}</td>
                                         <td>{{ $item['phoneNumber'] ?? '' }}</td>

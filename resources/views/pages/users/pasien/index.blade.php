@@ -1,5 +1,5 @@
 @extends('other.layouts.app')
-@section('navbar-title', 'Tabel Admin')
+@section('navbar-title', 'Tabel Pasien')
 @section('content')
     <!-- Content wrapper -->
     <div class="content-wrapper">
@@ -8,7 +8,7 @@
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div class="flex-grow-1 me-3">
-                        <form action="{{ route('admins') }}" method="GET">
+                        <form action="{{ route('pasiens') }}" method="GET">
                             <div class="input-group input-group-merge w-100">
                                 <input type="text" class="form-control" name="table_search"
                                     value="{{ request('table_search') }}" placeholder="Search..." aria-label="Search..."
@@ -19,15 +19,15 @@
                         </form>
                     </div>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCenter">
-                        Tambah Admin
+                        Tambah Pasien
                     </button>
                 </div>
-                @include('pages.users.admin.add')
+                @include('pages.users.pasien.add')
             </div>
             <div class="card">
                 @if ($users == null)
                     <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
-                        Tidak ada dokter yang terdaftar silahkan tambahkan dokter
+                        Tidak ada pasien yang terdaftar
                     </div>
                 @else
                     <div class="table-responsive text-nowrap">
@@ -47,7 +47,15 @@
                                 @foreach ($users as $key => $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item['url'] ?? '' }}</td>
+                                        <td>
+                                            @if ($item['profileImageUrl'])
+                                                <img src="{{ $item['profileImageUrl'] }}" alt="Profile Image"
+                                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                            @else
+                                                <img src="path/to/default/image.jpg" alt="Default Image"
+                                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                            @endif
+                                        </td>
                                         <td>{{ $item['displayName'] ?? '' }}</td>
                                         <td>{{ $item['email'] ?? '' }}</td>
                                         <td>{{ $item['phoneNumber'] ?? '' }}</td>
@@ -63,13 +71,9 @@
                                                         <i class="tf-icons bx bx-edit-alt"></i>
                                                     </a>
                                                     <button type="button" class="btn rounded-pill btn-icon btn-danger"
-                                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                                                        <i class="tf-icons bx bx-trash"></i>
-                                                    </button>
-                                                    <button type="button" class="btn rounded-pill btn-icon btn-success"
                                                         data-bs-toggle="modal"
-                                                        data-bs-target="#sendMessageModal-{{ $key }}">
-                                                        <i class="tf-icons bx bx-send"></i>
+                                                        data-bs-target="#confirmDeleteModal{{ $key }}">
+                                                        <i class="tf-icons bx bx-trash"></i>
                                                     </button>
                                                 </div>
                                             </div>
@@ -77,7 +81,8 @@
                                     </tr>
 
                                     <!-- Modal Konfirmasi Hapus -->
-                                    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+                                    <div class="modal fade" id="confirmDeleteModal{{ $key }}" tabindex="-1"
+                                        aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
@@ -85,46 +90,17 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>
                                                 </div>
-                                                <form id="deleteForm" method="POST"
+                                                <form id="deleteForm{{ $key }}" method="POST"
                                                     action="{{ route('pasiens.destroy', $key) }}">
                                                     @csrf
                                                     @method('DELETE')
                                                     <div class="modal-body">
-                                                        Apakah Anda yakin ingin menghapus pengguna ini?
+                                                        Apakah Anda yakin ingin menghapus dokter ini?
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary"
                                                             data-bs-dismiss="modal">Tidak</button>
                                                         <button type="submit" class="btn btn-danger">Iya</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Modal Kirim Pesan -->
-                                    <div class="modal fade" id="sendMessageModal-{{ $key }}" tabindex="-1"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Kirim Pesan</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <form id="sendMessageForm" method="POST"
-                                                    action="{{ route('pasiens.send-message', $item['fcm_token']) }}">
-                                                    @csrf
-                                                    <div class="modal-body">
-                                                        <div class="form-group">
-                                                            <label for="message">Pesan</label>
-                                                            <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">Batal</button>
-                                                        <button type="submit" class="btn btn-success">Kirim</button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -138,13 +114,5 @@
             </div>
         </div>
     </div>
-    @include('other.alert.success')
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show position-fixed bottom-0 end-0 m-3" role="alert"
-            style="z-index: 1050;">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
 
 @endsection

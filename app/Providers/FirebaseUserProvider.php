@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Cache;
 
 class FirebaseUserProvider extends ServiceProvider
 {
@@ -31,8 +32,11 @@ class FirebaseUserProvider extends ServiceProvider
             $uid = session('uid');
 
             if ($uid) {
-                // Directly retrieve the user data from Firebase without caching
-                $user = Firebase::database()->getReference('users/' . $uid)->getValue();
+                // Use caching to reduce the number of requests to Firebase
+                $cacheKey = 'firebase_user_' . $uid;
+                $user = Cache::remember($cacheKey, 60, function () use ($uid) {
+                    return Firebase::database()->getReference('users/' . $uid)->getValue();
+                });
             }
 
             $view->with('authUser', $user);

@@ -9,7 +9,7 @@
                         <div class="d-flex justify-content-center align-items-center">
                             <form action="{{ route('jadwal') }}" method="GET" class="d-flex">
                                 @if ($authUser['role'] === 'admin')
-                                    <input type="hidden" name="doctor_key" value="{{ request('doctor_key') }}">
+                                    <input type="hidden" name="doctor_id" value="{{ request('doctor_id') }}">
                                 @endif
                                 <div class="btn-group" role="group" aria-label="Date range">
                                     @for ($i = 0; $i < 7; $i++)
@@ -32,13 +32,14 @@
                         </div>
                     </div>
                 </div>
-
+            </div>
+            <div class="card mt-3">
                 @if ($antrians == null)
-                    <div class="alert alert-warning text-center mt-3 ms-5 me-5 " role="alert">
+                    <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
                         Tidak ada antrian pada tanggal ini.
                     </div>
                 @else
-                    <div class="card-body table-responsive p-0" style="height: 300px;">
+                    <div class="card-body table-responsive p-0">
                         <table class="table table-head-fixed text-nowrap">
                             <thead>
                                 <tr>
@@ -47,7 +48,6 @@
                                     <th>Nama Dokter</th>
                                     <th>Status</th>
                                     <th>Tanggal Antrian</th>
-                                    <th>Dibuat</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -58,21 +58,28 @@
                                         <td>{{ $item['pasien_name'] ?? '' }}</td>
                                         <td>{{ $item['doctor_name'] ?? '' }}</td>
                                         <td>{{ $item['status'] ?? '' }}</td>
-                                        <td>{{ $item['date'] ?? '' }}</td>
-                                        <td>{{ $item['created_at'] ?? '' }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item['date'])->format('j M Y') }}</td>
                                         <td>
-                                            <form action="{{ url('jadwal.update') }}" method="POST"
+                                            <form action="{{ url('jadwal/update', $key) }}" method="POST"
                                                 style="display:inline;">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="status"
-                                                    value="{{ $item['user_key'] == 'berlangsung' ? 'selesai' : 'berlangsung' }}">
+                                                    value="{{ $item['status'] == 'berlangsung' ? 'selesai' : 'berlangsung' }}">
                                                 <button type="submit" class="btn btn-sm btn-success">
-                                                    {{ $item['user_key'] == 'berlangsung' ? 'Selesai' : 'Diterima' }}
+                                                    <i class='bx bx-check-circle'></i>
+                                                    {{ $item['status'] == 'berlangsung' ? 'Selesai' : 'Diterima' }}
                                                 </button>
                                             </form>
+                                            <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                                                data-bs-target="#detailModal{{ $key }}">
+                                                <i class='bx bx-show'></i> Detail
+                                            </button>
                                         </td>
                                     </tr>
+                                    <!-- Modal -->
+                                    @include('pages.antrian.jadwal.show')
+                                    <!-- //Modal -->
                                 @endforeach
                             </tbody>
                         </table>
@@ -82,3 +89,14 @@
         </div>
     </div>
 @endsection
+<style>
+    .modal-header.bg-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .modal-title.text-center {
+        width: 100%;
+        text-align: center;
+    }
+</style>
