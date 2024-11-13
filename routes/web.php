@@ -1,17 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PostController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Page\DashboardController;
-use App\Http\Controllers\Firebase\ContactController;
 use App\Http\Controllers\Message\MessagesController;
 use App\Http\Controllers\Page\User\AdminsController;
+use App\Http\Controllers\Aplikasi\AplikasiController;
 use App\Http\Controllers\Page\User\DoctorsController;
 use App\Http\Controllers\Page\User\PasiensController;
 use App\Http\Controllers\Page\Antrian\JadwalController;
-use App\Http\Controllers\Page\Profile\KlinikController;
 use App\Http\Controllers\Page\Antrian\RiwayatController;
 use App\Http\Controllers\Page\Profile\PasswordController;
 use App\Http\Controllers\Page\Profile\MyprofileController;
@@ -32,6 +30,8 @@ use App\Http\Controllers\Page\Profile\JadwalLiburController;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/download-app', [AplikasiController::class, 'downloadApp'])->name('download.app');
+
 
 Route::get('login', [LoginController::class, 'index'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
@@ -60,6 +60,11 @@ Route::middleware(['firebase.auth:admin'])->group(function () {
     Route::put('/pasiens/update/{id}', [PasiensController::class, 'update'])->name('pasiens.update');
     Route::delete('/pasiens/delate/{id}', [PasiensController::class, 'destroy'])->name('pasiens.destroy');
     Route::post('/pasiens/send-message/{key}', [MessagesController::class, 'send'])->name('pasiens.send-message');
+
+    //upload aplikasi
+    Route::get('/aplikasi', [AplikasiController::class, 'index'])->name('upload.view');
+    Route::post('/aplikasi/upload', [AplikasiController::class, 'uploadFile'])->name('aplikasi.upload');
+    Route::delete('/aplikasi/delete', [AplikasiController::class, 'deleteFile'])->name('aplikasi.delete');
 });
 
 Route::middleware(['firebase.auth:dokter'])->group(function () {

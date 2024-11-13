@@ -55,7 +55,7 @@
                                 @foreach ($antrians as $key => $item)
                                     <tr>
                                         <td>{{ $item['nomor_antrian'] ?? '' }}</td>
-                                        <td>{{ $item['pasien_name'] ?? '' }}</td>
+                                        <td>{{ $item['name_pasien'] ?? '' }}</td>
                                         <td>{{ $item['doctor_name'] ?? '' }}</td>
                                         <td>{{ $item['status'] ?? '' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item['date'])->format('j M Y') }}</td>

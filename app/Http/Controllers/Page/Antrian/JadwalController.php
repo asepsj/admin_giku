@@ -15,7 +15,6 @@ class JadwalController extends Controller
         $this->database = Firebase::database();
         $this->tablename = 'antrians';
         $this->userTable = 'users';
-        $this->pasienTable = 'pasiens';
     }
 
     public function index(Request $request)
@@ -40,7 +39,6 @@ class JadwalController extends Controller
 
         // Fetch users and pasien data
         $users = $this->database->getReference($this->userTable)->getValue() ?? [];
-        $pasiens = $this->database->getReference($this->pasienTable)->getValue() ?? [];
 
         // Filter antrians by date and status
         $filteredAntrians = array_filter($antrians, function ($antrian) use ($date) {
@@ -52,7 +50,6 @@ class JadwalController extends Controller
         // Attach names to antrians
         foreach ($filteredAntrians as &$antrian) {
             $antrian['doctor_name'] = $users[$antrian['doctor_id']]['displayName'] ?? 'Unknown';
-            $antrian['pasien_name'] = $pasiens[$antrian['pasien_id']]['displayName'] ?? 'Unknown';
         }
 
         return view('pages.antrian.jadwal.index', ['antrians' => $filteredAntrians]);
@@ -62,6 +59,7 @@ class JadwalController extends Controller
     public function update(Request $request, $id)
     {
         $status = $request->input('status', 'berlangsung');
+        $catatan = $request->input('catatan', null); 
         $antrianRef = $this->database->getReference($this->tablename . '/' . $id);
 
         $antrian = $antrianRef->getValue();
@@ -69,11 +67,16 @@ class JadwalController extends Controller
         if ($antrian) {
             // Update the status
             $antrian['status'] = $status;
-            $userKey = $antrian['pasien_id'];
+
+            if ($catatan) {
+                // Tambahkan catatan ke data antrian jika ada
+                $antrian['catatan'] = $catatan;
+            }
 
             // Save the updated data back to Firebase
-            $antrianRef->update(['status' => $status]);
+            $antrianRef->update(['status' => $status, 'catatan' => $catatan]);
 
+            $userKey = $antrian['pasien_id'];
             $user = $this->database->getReference('pasiens' . '/' . $userKey)->getValue();
 
             $messageTitle = 'Update Antrian';

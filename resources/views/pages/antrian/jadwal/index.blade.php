@@ -6,12 +6,12 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-tools table-responsive">
-                        <div class="d-flex justify-content-center align-items-center">
-                            <form action="{{ route('jadwal') }}" method="GET" class="d-flex">
+                        <div class="d-flex align-items-center">
+                            <form action="{{ route('jadwal') }}" method="GET" class="d-flex flex-wrap w-100">
                                 @if ($authUser['role'] === 'admin')
                                     <input type="hidden" name="doctor_id" value="{{ request('doctor_id') }}">
                                 @endif
-                                <div class="btn-group" role="group" aria-label="Date range">
+                                <div class="btn-group mx-auto" role="group" aria-label="Date range">
                                     @for ($i = 0; $i < 7; $i++)
                                         @php
                                             \Carbon\Carbon::setLocale('id');
@@ -33,6 +33,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="card mt-3">
                 @if ($antrians == null)
                     <div class="alert alert-danger text-center mt-3 ms-5 me-5 " role="alert">
@@ -55,22 +56,27 @@
                                 @foreach ($antrians as $key => $item)
                                     <tr>
                                         <td>{{ $item['nomor_antrian'] ?? '' }}</td>
-                                        <td>{{ $item['pasien_name'] ?? '' }}</td>
+                                        <td>{{ $item['name_pasien'] ?? '' }}</td>
                                         <td>{{ $item['doctor_name'] ?? '' }}</td>
                                         <td>{{ $item['status'] ?? '' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($item['date'])->format('j M Y') }}</td>
                                         <td>
-                                            <form action="{{ url('jadwal/update', $key) }}" method="POST"
-                                                style="display:inline;">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="hidden" name="status"
-                                                    value="{{ $item['status'] == 'berlangsung' ? 'selesai' : 'berlangsung' }}">
-                                                <button type="submit" class="btn btn-sm btn-success">
-                                                    <i class='bx bx-check-circle'></i>
-                                                    {{ $item['status'] == 'berlangsung' ? 'Selesai' : 'Diterima' }}
+                                            @if ($item['status'] == 'berlangsung')
+                                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
+                                                    data-bs-target="#catatanModal{{ $key }}">
+                                                    <i class='bx bx-check-circle'></i> Selesai
                                                 </button>
-                                            </form>
+                                            @else
+                                                <form action="{{ url('jadwal/update', $key) }}" method="POST"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="status" value="berlangsung">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class='bx bx-check-circle'></i> Diterima
+                                                    </button>
+                                                </form>
+                                            @endif
                                             <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
                                                 data-bs-target="#detailModal{{ $key }}">
                                                 <i class='bx bx-show'></i> Detail
@@ -79,6 +85,7 @@
                                     </tr>
                                     <!-- Modal -->
                                     @include('pages.antrian.jadwal.show')
+                                    @include('pages.antrian.jadwal.catatan')
                                     <!-- //Modal -->
                                 @endforeach
                             </tbody>

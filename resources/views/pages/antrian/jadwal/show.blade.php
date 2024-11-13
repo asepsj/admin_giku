@@ -10,14 +10,13 @@
             <div class="modal-body">
                 <div class="text-center mb-3">
                     <h1>00{{ $item['nomor_antrian'] ?? '' }}</h1>
-                    <p>{{ \Carbon\Carbon::parse($item['date'])->format('j M Y') }}
-                    </p>
+                    <p>{{ \Carbon\Carbon::parse($item['date'])->format('j M Y') }}</p>
                 </div>
                 <div class="mb-3">
                     <label for="pasien" class="form-label">Pelanggan/Pasien</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="pasien"
-                            value="{{ $item['pasien_name'] ?? '' }}" disabled>
+                            value="{{ $item['name_pasien'] ?? '' }}" disabled>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -39,6 +38,12 @@
                     <div class="input-group">
                         <input type="text" class="form-control" id="status"
                             value="{{ $item['status'] ?? '' }}" disabled>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="catatan" class="form-label">Catatan</label>
+                    <div class="input-group">
+                        <textarea class="form-control" id="catatan" rows="3" disabled>{{ $item['catatan'] ?? 'Tidak ada catatan.' }}</textarea>
                     </div>
                 </div>
             </div>

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Page\Profile;
 
-use Kreait\Firebase\Auth;
-use Kreait\Firebase\Storage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Kreait\Laravel\Firebase\Facades\Firebase;

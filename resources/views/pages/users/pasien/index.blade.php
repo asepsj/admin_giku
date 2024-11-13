@@ -48,11 +48,11 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>
-                                            @if ($item['profileImageUrl'])
+                                            @if ($item['profileImageUrl'] ?? '')
                                                 <img src="{{ $item['profileImageUrl'] }}" alt="Profile Image"
                                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
                                             @else
-                                                <img src="path/to/default/image.jpg" alt="Default Image"
+                                                <img src="{{ asset('storage/logo/user.png') }}" alt="Default Image"
                                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
                                             @endif
                                         </td>

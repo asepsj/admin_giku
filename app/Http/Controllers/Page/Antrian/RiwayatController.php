@@ -13,7 +13,6 @@ class RiwayatController extends Controller
         $this->database = Firebase::database();
         $this->antrianTable = 'antrians';
         $this->userTable = 'users';
-        $this->pasienTable = 'pasiens';
     }
 
     public function index(Request $request)
@@ -29,11 +28,9 @@ class RiwayatController extends Controller
 
         // Fetch users and pasien data
         $users = $this->database->getReference($this->userTable)->getValue();
-        $pasiens = $this->database->getReference($this->pasienTable)->getValue();
         // Attach names to antrians
         foreach ($antrians as &$antrian) {
             $antrian['doctor_name'] = $users[$antrian['doctor_id']]['displayName'] ?? 'Unknown';
-            $antrian['pasien_name'] = $pasiens[$antrian['pasien_id']]['displayName'] ?? 'Unknown';
         }
 
         // Filter antrians by status and search term
@@ -44,7 +41,7 @@ class RiwayatController extends Controller
                 in_array($antrian['status'], ['batal', 'selesai']) &&
                 $dateMatch &&
                 (
-                    strpos(strtolower($antrian['pasien_name'] ?? ''), $searchTerm) !== false
+                    strpos(strtolower($antrian['name_pasien'] ?? ''), $searchTerm) !== false
                 )
             );
         });
